@@ -33,20 +33,20 @@ public class ComparisonFailure extends AssertionError {
 	
 	private static class ComparisonCompactor {
 		private static final String ELLIPSIS = "...";
-		private static final String DIEF_END = "]";
-		private static final String DIEF_START = "[";
+		private static final String DIFF_END = "]";
+		private static final String DIFF_START = "[";
 		
 		private final int contextLength;
 		private final String expected;
 		private final String actual;
 		
-		public ComparsionCompactor(int contextLength, String expected, String actual) {
+		public ComparisonCompactor(int contextLength, String expected, String actual) {
 			this.contextLength = contextLength;
 			this.expected = expected;
 			this.actual = actual;
 		}
 		
-		public String comoact(String message) {
+		public String compact(String message) {
 			if(expected == null || actual == null || expected.equals(actual)) {
 				return Assert.format(message, expected, actual);
 			} else {
@@ -59,7 +59,7 @@ public class ComparisonFailure extends AssertionError {
 			}
 		}
 		
-		private String sharePrefix() {
+		private String sharedPrefix() {
 			int end = Math.min(expected.length(), actual.length());
 			for (int i = 0; i < end; i++) {
 				if (expected.charAt(i) != actual.charAt(i)) {
@@ -69,12 +69,52 @@ public class ComparisonFailure extends AssertionError {
 			return expected.substring(0, end);
 		}
 		
-		private String shareSuffix(String prefix) {
+		private String sharedSuffix(String prefix) {
 			int suffixLength = 0;
 			int maxSuffixLength = Math.min(expected.length() - prefix.length(),
 					actual.length() - prefix.length()) - 1;
 			for (; suffixLength <= maxSuffixLength; suffixLength++) {
-				
+				if (expected.charAt(expected.length() - 1 - suffixLength)
+					!= actual.charAt(actual.length() - 1 - suffixLength)) {
+					break;
+				}
+			}
+			return expected.substring(expected.length() - suffixLength);
+		}
+		
+		private class DiffExtractor {
+			private final String sharedPrefix;
+			private final String sharedSuffix;
+			
+			private DiffExtractor() {
+				sharedPrefix = sharedPrefix();
+				sharedSuffix = sharedSuffix(sharedPrefix);
+			}
+			
+			public String expectedDiff() {
+				return extractDiff(expected);
+			}
+			
+			public String actualDiff() {
+				return extractDiff(actual);
+			}
+			
+			public String compactPrefix() {
+				if (sharedPrefix.length() <= contextLength) {
+					return sharedPrefix;
+				}
+				return ELLIPSIS + sharedPrefix.substring(sharedPrefix.length() - contextLength);
+			}
+			
+			public String compactSuffix() {
+				if(sharedSuffix.length() <= contextLength) {
+					return sharedSuffix;
+				}
+				return sharedSuffix.substring(0, contextLength) + ELLIPSIS;
+			}
+			
+			private String extractDiff(String source) {
+				return DIFF_START + source.substring(sharedPrefix.length(), source.length() - sharedSuffix.length()) + DIFF_END;
 			}
 		}
 	}
