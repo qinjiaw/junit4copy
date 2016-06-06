@@ -1,5 +1,7 @@
 package org.junit.junit4copy;
 
+import java.util.regex.Matcher;
+
 public class Assert {
 
 	protected Assert() {
@@ -171,9 +173,13 @@ public class Assert {
 		new ExactComparisonCriteria().arrayEquals(message, expecteds, actuals);
 	}
 	
-	public static void assertEquals(String message, double expecteds, double actuals, double detla) {
-		if (doubleIsDifferent(expecteds, actuals, detla)) {
-			failNotEquals(message, Double.valueOf(expecteds), Double.valueOf(actuals));
+	private static void internalArrayEquals(String message, Object expecteds, Object actuals) throws ArrayComparisonFailure {
+		new ExactComparisonCriteria().arrayEquals(message, expecteds, actuals);
+	}
+	
+	public static void assertEquals(String message, double expected, double actual, double detla) {
+		if (doubleIsDifferent(expected, actual, detla)) {
+			failNotEquals(message, Double.valueOf(expected), Double.valueOf(actual));
 		}
 	}
 	
@@ -324,12 +330,47 @@ public class Assert {
 		return className + "<" + valueString + ">";
 	}
 	
-	
+	@Deprecated
+	private static void assertEquals(String message, Object[] expecteds, Object[] actuals) {
+		assertArrayEquals(message, expecteds, actuals);
+	}
  	
+	@Deprecated
+	private static void assertEquals(Object[] expecteds, Object[] actuals) {
+		assertArrayEquals(expecteds, actuals);
+	}
 	
+	@Deprecated
+	private static <T> void assertThat(String reason, T actual, Matcher<? super T> matcher) {
+		MatcherAssert.assertThat(reason, actual, matcher);
+	}
 	
+	private interface ThrowingRunnable {
+		void run() throws Throwable;
+	}
 	
+	private static void assertThrows(Class<? extends Throwable> expectedThrowable, ThrowingRunnable runnable) {
+		expectThrows(expectedThrowable, runnable);
+	}
 	
+	private static <T extends Throwable> T expectThrows(Class<T> expectedThrowable, ThrowingRunnable runnable) {
+		try {
+			runnable.run();
+		} catch (Throwable actualThrown) {
+			if (expectedThrowable.isInstance(actualThrown)) {
+				@SuppressWarnings("unchecked") T retVal = (T) actualThrown;
+				return retVal;
+			} else {
+				String mismatchMessage = format("unexpected exception type thrown;", expectedThrowable.getSimpleName(), actualThrown.getClass().getSimpleName());
+				// The AssertionError(String, Throwable) ctor is only available on JDK7.
+				AssertionError assertionError = new AssertionError(mismatchMessage);
+				assertionError.initCause(actualThrown);
+				throw assertionError;
+			}
+		}
+		String message = String.format("expected %s to be thrown, but nothing was thrown", expectedThrowable.getSimpleName());
+		throw new AssertionError(message);
+	}
 	
 	
 	
