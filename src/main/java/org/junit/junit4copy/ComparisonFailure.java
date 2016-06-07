@@ -1,6 +1,5 @@
 package org.junit.junit4copy;
 
-import junit.framework.Assert;
 
 public class ComparisonFailure extends AssertionError {
 

@@ -1,6 +1,10 @@
 package org.junit.junit4copy;
 
-import java.util.regex.Matcher;
+import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
+import org.junit.junit4copy.internal.ArrayComparisonFailure;
+import org.junit.junit4copy.internal.ExactComparisonCriteria;
+import org.junit.junit4copy.internal.InexactComparisonCriteria;
 
 public class Assert {
 
@@ -61,7 +65,7 @@ public class Assert {
 		return expected.equals(actual);
 	}
 	
-	private static void assertEquals(Object expected, Object actual) {
+	public static void assertEquals(Object expected, Object actual) {
 		assertEquals(null, expected, actual);
 	}
 	
@@ -88,7 +92,7 @@ public class Assert {
 	}
 	
 	public static void assertNoEquals(long unexpected, long actual) {
-		assertNotEuqals(null, unexpected, actual);
+		assertNotEquals(null, unexpected, actual);
 	}
 	
 	public static void assertNotEquals(String message, double unexpected, double actual, double delta) {
@@ -98,7 +102,7 @@ public class Assert {
 	}
 	
 	public static void assertNotEquals(double unexpected, double actual, double delta) {
-		asserNotEquals(null, unexpected, actual, delta);
+		assertNotEquals(null, unexpected, actual, delta);
 	}
 	
 	public static void assertArrayEquals(String message, Object[] expecteds, Object[] actuals) throws ArrayComparisonFailure {
@@ -154,14 +158,14 @@ public class Assert {
 	}
 	
 	public static void assertArrayEquals(String message, double[] expecteds, double[] actuals, double delta) throws ArrayComparisonFailure {
-		new InexactComparisonCriterial(delta).arrayEquals(message, expecteds, actuals);
+		new InexactComparisonCriteria(delta).arrayEquals(message, expecteds, actuals);
 	}
 	
 	public static void assertArrayEquals(double[] expecteds, double[] actuals, double delta) {
 		assertArrayEquals(null, expecteds, actuals);
 	}
 	
-	public static void assertArrayEuqals(String message, float[] expecteds, float[] actuals, float delta) throws ArrayComparisonFailure {
+	public static void assertArrayEquals(String message, float[] expecteds, float[] actuals, float delta) throws ArrayComparisonFailure {
 		new InexactComparisonCriteria(delta).arrayEquals(message, expecteds, actuals);
 	}
 	
