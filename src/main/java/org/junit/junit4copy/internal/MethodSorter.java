@@ -1,6 +1,9 @@
 package org.junit.junit4copy.internal;
 
+import org.junit.junit4copy.FixMethodOrder;
+
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Comparator;
 
 public class MethodSorter {
@@ -29,4 +32,25 @@ public class MethodSorter {
 		}
 
 	};
+
+	public static Method[] getDeclaredMethods(Class<?> clazz) {
+		Comparator<Method> comparator = getSorter(clazz.getAnnotation(FixMethodOrder.class));
+		Method[] methods = clazz.getDeclaredMethods();
+		if (comparator != null) {
+			Arrays.sort(methods, comparator);
+		}
+
+		return methods;
+	}
+
+	private MethodSorter() {
+
+	}
+
+	private static Comparator<Method> getSorter(FixMethodOrder fixMethodOrder) {
+		if (fixMethodOrder == null) {
+			return  DEFAULT;
+		}
+		return fixMethodOrder.value().getComparator();
+	}
 }

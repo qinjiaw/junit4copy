@@ -1,9 +1,9 @@
 package org.junit.junit4copy.internal;
 
+import org.junit.junit4copy.Assert;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
-
-import junit.framework.Assert;
 
 public abstract class ComparisonCriteria {
 	
@@ -33,13 +33,11 @@ public abstract class ComparisonCriteria {
 				} catch (AssertionError e) {
 					throw new ArrayComparisonFailure(header, e, i);
 				}	
-			} else {
-				try {
+			} else  try {
 					assertElementsEqual(expected, actual);
 				} catch (AssertionError e) {
 					throw new ArrayComparisonFailure(header, e, i);
 				}
-			} 
 		}
 	}
 	
@@ -63,15 +61,5 @@ public abstract class ComparisonCriteria {
 	}
 	
 	protected abstract void assertElementsEqual(Object expected, Object actual);
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 }
