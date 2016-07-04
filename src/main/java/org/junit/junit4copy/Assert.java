@@ -242,7 +242,7 @@ public class Assert {
 		fail("Use asserEquals(expected, actual, detla) to compare floating-point numbers");
 	}
 	
-	public static void assertEuals(double expected, double actual, double detla) {
+	public static void assertEquals(double expected, double actual, double detla) {
 		assertEquals(null, expected, actual, detla);
 	}
 	

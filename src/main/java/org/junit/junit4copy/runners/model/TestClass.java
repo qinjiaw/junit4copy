@@ -13,6 +13,7 @@ import org.omg.CORBA.FREE_MEM;
 
 import java.awt.*;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -39,16 +40,16 @@ public class TestClass implements Annotatable {
             );
         }
 
-        Map<Class<? extends Annotation>, List<FrameworkMethod>>
-                methodsForAnnotations = new LinkedHashMap<Class<? extends Annotation>, List<FrameworkMethod>>();
-        Map<Class<? extends Annotation>, List<FrameworkField>>
-                fieldsForAnnotations = new LinkedHashMap<Class<? extends Annotation>, List<FrameworkField>>();
+        Map<Class<? extends Annotation>, List<FrameworkMethod>> methodsForAnnotations =
+                new LinkedHashMap<Class<? extends Annotation>, List<FrameworkMethod>>();
+        Map<Class<? extends Annotation>, List<FrameworkField>> fieldsForAnnotations =
+                new LinkedHashMap<Class<? extends Annotation>, List<FrameworkField>>();
         scanAnnotatedMembers(methodsForAnnotations, fieldsForAnnotations);
         this.methodsForAnnotations = makeDeeplyUnmodifiable(methodsForAnnotations);
         this.fieldsForAnnotations = makeDeeplyUnmodifiable(fieldsForAnnotations);
     }
 
-    protected void scanAnnotatedMembers(Map<Class<? extends Annotation>, List<FrameworkMethod>> methodsForAnnotations, Map<Class<? extends  Annotation>, LIst<FrameworkField>> fieldsForAnnotations) {
+    protected void scanAnnotatedMembers(Map<Class<? extends Annotation>, List<FrameworkMethod>> methodsForAnnotations, Map<Class<? extends  Annotation>, List<FrameworkField>> fieldsForAnnotations) {
         for (Class<?> eachClass : getSuperClasses(clazz)) {
             for (Method eachMethod : MethodSorter.getDeclaredMethods(eachClass)) {
                 addToAnnotationLists(new FrameworkMethod(eachMethod), methodsForAnnotations);
@@ -68,7 +69,7 @@ public class TestClass implements Annotatable {
     protected static <T extends FrameworkMember<T>> void addToAnnotationLists(T member, Map<Class<? extends Annotation>, List<T>> map) {
         for (Annotation each : member.getAnnotations()) {
             Class<? extends Annotation> type = each.annotationType();
-            List<T> members = getAnnotatedMebers(map, type, true);
+            List<T> members = getAnnotatedMembers(map, type, true);
             if (member.isShadowedBy(members)) {
                 return;
             }
@@ -82,24 +83,33 @@ public class TestClass implements Annotatable {
 
     private static <T extends FrameworkMember<T>> Map<Class<? extends Annotation>, List<T>> makeDeeplyUnmodifable(Map<Class<? extends  Annotation>,  List<T>> source) {
         Map<Class<? extends  Annotation>, List<T>> copy = new LinkedHashMap<Class<? extends Annotation>, List<T>>();
-        for (Map.Entry<Class<? extends Annotation>, List<T>> entry : soutce.entrySet()) {
+        for (Map.Entry<Class<? extends Annotation>, List<T>> entry : source.entrySet()) {
+            copy.put(entry.getKey(), Collections.unmodifiableList(entry.getValue()));
+        }
+        return Collections.unmodifiableMap(copy);
+    }
+
+    private static <T extends FrameworkMember<T>> Map<Class<? extends Annotation>, List<T>> makeDeeplyUnmodifiable(Map<Class<? extends Annotation>, List<T>> source) {
+        Map<Class<? extends Annotation>, List<T>> copy =
+                new LinkedHashMap<Class<? extends Annotation>, List<T>>();
+        for (Map.Entry<Class<? extends Annotation>, List<T>> entry : source.entrySet()) {
             copy.put(entry.getKey(), Collections.unmodifiableList(entry.getValue()));
         }
         return Collections.unmodifiableMap(copy);
     }
 
     public List<FrameworkMethod> getAnnotatedMethods() {
-        List<FremeworkMethod> methods = collectValues(methodsForAnnotations);
+        List<FrameworkMethod> methods = collectValues(methodsForAnnotations);
         Collections.sort(methods, METHOD_COMPARATOR);
         return methods;
     }
 
     public List<FrameworkMethod> getAnnotatedMethods(Class<? extends Annotation> annotationClass) {
-        return Collections.unmodifiableList(getAnnotatedMethods(methodsForAnnotations, annotationClass, false))
-    }
+        return Collections.unmodifiableList(getAnnotatedMembers(methodsForAnnotations, annotationClass, false));
+    };
 
     public List<FrameworkField> getAnnotatedFields() {
-        return collectValue(fieldsForAnnotations);
+        return collectValues(fieldsForAnnotations);
     }
 
     public List<FrameworkField> getAnnotatedFields(Class<? extends Annotation> annotationClass) {
@@ -112,6 +122,14 @@ public class TestClass implements Annotatable {
             values.addAll(additiionalValues);
         }
         return new ArrayList<T>(values);
+    }
+
+    private static <T> List<T> getAnnotatedMembers(Map<Class<? extends Annotation>, List<T>> map, Class<? extends Annotation> type,boolean fillIfAbsent) {
+        if (map.containsKey(type) && fillIfAbsent) {
+            map.put(type, new ArrayList<T>());
+        }
+        List<T> members = map.get(type);
+        return members == null ? Collections.<T>emptyList() : members;
     }
 
     private static boolean runsTopToBottom(Class<? extends Annotation> annotation) {
@@ -140,10 +158,10 @@ public class TestClass implements Annotatable {
     }
 
     public Constructor<?> getOnlyConstructor() {
-        Constructor<?> constructor = clazz.getConstructors();
+        Constructor<?>[] constructors = clazz.getConstructors();
         Assert.assertEquals(1, constructors.length);
         return constructors[0];
-        }
+    }
 
     public Annotation[] getAnnotations() {
         if (clazz == null) {
@@ -175,11 +193,11 @@ public class TestClass implements Annotatable {
     }
 
     public <T> List<T> getAnnotatedMethodValues(Object test, Class<? extends Annotation> annotationClass, Class<T> valueClass) {
-        List<T> results = new ArrayList<T>;
+        List<T> results = new ArrayList<T>();
         for (FrameworkMethod each : getAnnotatedMethods(annotationClass)) {
             try {
                 if (valueClass.isAssignableFrom(each.getReturnType())) {
-                    Object fieldValue = each.ivokeExplosively(test);
+                    Object fieldValue = each.invokeExplosively(test);
                     results.add(valueClass.cast(fieldValue));
                 }
             } catch (Throwable e) {
