@@ -3,12 +3,15 @@ package org.junit.junit4copy.runners;
 import com.sun.corba.se.spi.ior.ObjectKey;
 import com.sun.org.glassfish.gmbal.Description;
 import com.sun.scenario.effect.Filterable;
-import org.junit.junit4copy.Test;
+//import org.junit.junit4copy.Test;
+import org.junit.junit4copy.BeforeClass;
+import org.junit.junit4copy.runners.model.FrameworkField;
 import org.junit.junit4copy.runners.model.TestClass;
 import org.junit.junit4copy.validator.AnnotationsValidator;
 import org.junit.junit4copy.validator.PublicClassValidator;
 import org.junit.junit4copy.validator.TestClassValidator;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -46,5 +49,15 @@ public abstract class ParentRunner<T> extends Runner implements Filterable, Sort
     protected abstract List<T> getChildren();
     protected abstract Description describeChild(T child);
     protected abstract void runChild(T child, RunNotifier notifier);
-    protected void collectInitializationErrors(List<Throwable> errors)
+    protected void collectInitializationErrors(List<Throwable> errors) {
+        validatePublicVoidNoArgMethods(BeforeClass.class, true, errors);
+    }
+    protected void validatePublicVoidNoArgMethods(Class<? extends Annotation> annotatoin,
+                                                  boolean isStatic, List<Throwable> errors) {
+        List<FrameworkField> methods = getTestClass().getAnnotatedMethods(annotatoin);
+
+        for (FrameworkField eachTestMethod : methods) {
+            eachTestMethod.validatePublicVoidNoArg(isStatic, errors);
+        }
+    }
 }
