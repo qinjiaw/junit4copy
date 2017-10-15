@@ -1,4 +1,4 @@
-package org.junit.junit4copy.runner.notification;
+package org.junit.junit4copy.runner;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 /**
  * Created by qinjw on 2017/7/1.
+ * @author qinjw
  */
 public class Description implements Serializable {
     private static final long serialVersionUID = 1L;
