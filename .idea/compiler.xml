@@ -9,12 +9,8 @@
         <module name="junit4copy" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="1.8">
-<<<<<<< HEAD
+    <bytecodeTargetLevel>
       <module name="junit4copy" target="1.6" />
-=======
-      <module name="junit4copy" target="1.8" />
->>>>>>> c247842d5933a5cc71f638f8af5d8c2fecbb39e7
     </bytecodeTargetLevel>
   </component>
 </project>

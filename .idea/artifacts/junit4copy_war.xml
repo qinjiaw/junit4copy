@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="junit4copy:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="junit4copy.war">
+      <element id="artifact" artifact-name="junit4copy:war exploded" />
+    </root>
+  </artifact>
+</component>
